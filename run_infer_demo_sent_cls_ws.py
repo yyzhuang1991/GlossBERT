@@ -12,6 +12,7 @@ logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(messa
                     datefmt = '%m/%d/%Y %H:%M:%S',
                     level = logging.INFO)
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def construct_context_gloss_pairs(input, target_start_id, target_end_id, lemma):
     """
@@ -135,19 +136,7 @@ def _truncate_seq_pair(tokens_a, tokens_b, max_length):
 
 
 
-def infer(input, target_start_id, target_end_id, lemma, args):
-
-
-    device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
-
-
-    label_list = ["0", "1"]
-    num_labels = len(label_list)
-    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
-    model = BertForSequenceClassification.from_pretrained(args.bert_model,
-                                                          num_labels=num_labels)
-    model.to(device)
-
+def infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args):
 
     print(f"input: {input}\nlemma: {lemma}")
     examples = construct_context_gloss_pairs(input, target_start_id, target_end_id, lemma)
@@ -157,7 +146,6 @@ def infer(input, target_start_id, target_end_id, lemma, args):
     segment_ids = torch.tensor([f.segment_ids for f in eval_features], dtype=torch.long)
 
 
-    model.eval()
     input_ids = input_ids.to(device)
     input_mask = input_mask.to(device)
     segment_ids = segment_ids.to(device)
@@ -166,10 +154,30 @@ def infer(input, target_start_id, target_end_id, lemma, args):
     logits_ = F.softmax(logits, dim=-1)
     logits_ = logits_.detach().cpu().numpy()
     output = np.argmax(logits_, axis=0)[1]
-    print(f"results:\nsense_key: {candidate_results[output][0]}\ngloss: {candidate_results[output][1]}")
+    # print(f"results:\nsense_key: {candidate_results[output][0]}\ngloss: {candidate_results[output][1]}")
+    sense_key = candidate_results[output][0]
+    gloss = candidate_results[output][1]
+    return sense_key, gloss
 
 
+def infer_for_examples(sentences, target_starts, target_ends, lemmas, args):
+    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
+    label_list = ["0", "1"]
+    num_labels = len(label_list)
+                                     
+    model = BertForSequenceClassification.from_pretrained(args.bert_model,  num_labels=num_labels)
+    model.to(device)
+    model.eval()
 
+    sense_keys = []
+    glosses = []
+    
+    for sent_str, target_start_id, target_end_id, lemma in zip(sentences, target_starts, target_ends, lemmas):
+        sense_key, gloss = infer(model, tokenizer, sent_str, target_start_id, target_end_id, lemma, args)
+        sense_keys.append(sense_key)
+        glosses.append(gloss)
+    return sense_keys, glosses
+    
 if  __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -186,5 +194,12 @@ if  __name__ == "__main__":
     target_end_id = 4
     lemma = "plan"
 
-    infer(input, target_start_id, target_end_id, lemma, args)
+    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
+    label_list = ["0", "1"]
+    num_labels = len(label_list)
+                                     
+    model = BertForSequenceClassification.from_pretrained(args.bert_model,  num_labels=num_labels)
+    
+
+    infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args)
 
