@@ -177,11 +177,13 @@ def infer_for_examples(sentences, target_starts, target_ends, lemmas, args):
         sense_keys.append(sense_key)
         glosses.append(gloss)
     return sense_keys, glosses
-    
+
 if  __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--bert_model", default="./Sent_CLS_WS", type=str)
+    # parser.add_argument("--bert_model", default="./Sent_CLS_WS", type=str)
+    parser.add_argument("--bert_model", default="/uusoc/exports/scratch/yyzhuang/glossbert/checkpoint/", type=str)
+    
     parser.add_argument("--no_cuda", default=False, action='store_true', help="Whether not to use CUDA when available")
 
     args = parser.parse_args()
