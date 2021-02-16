@@ -204,6 +204,6 @@ if  __name__ == "__main__":
     
     model.to(device)
     model.eval()
-    
-    infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args)
 
+    sense_key, gloss = infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args)
+    print(f"output sense key: {sense_key}, gloss = {gloss}")
