@@ -202,6 +202,8 @@ if  __name__ == "__main__":
                                      
     model = BertForSequenceClassification.from_pretrained(args.bert_model,  num_labels=num_labels)
     
-
+    model.to(device)
+    model.eval()
+    
     infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args)
 
