@@ -197,10 +197,10 @@ if  __name__ == "__main__":
     # target_end_id = 4
     # lemma = "plan"
 
-    input = "I was caught in the thunderstrom"
+    input = "I was caught in the xxddd"
     target_start_id = 5
     target_end_id = 6
-    lemma = "thunderstorm"
+    lemma = "xxddd"
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
     label_list = ["0", "1"]
     num_labels = len(label_list)
