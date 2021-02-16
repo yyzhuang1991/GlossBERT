@@ -58,8 +58,10 @@ def construct_context_gloss_pairs(input, target_start_id, target_end_id, lemma):
                 candidate.append((sent, f"{target} : {gloss}", target, lemma, sense_key, gloss))
         except:
             pass
-    assert len(candidate) != 0, f'there is no candidate sense of "{lemma}" in WordNet, please check'
-    print(f'there are {len(candidate)} candidate senses of "{lemma}"')
+    if len(candidate) == 0:
+        return None
+    # assert len(candidate) != 0, f'there is no candidate sense of "{lemma}" in WordNet, please check'
+    # print(f'there are {len(candidate)} candidate senses of "{lemma}"')
 
 
     return candidate
@@ -140,6 +142,8 @@ def infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args):
 
     print(f"input: {input}\nlemma: {lemma}")
     examples = construct_context_gloss_pairs(input, target_start_id, target_end_id, lemma)
+    if examples is None:
+        return None
     eval_features, candidate_results = convert_to_features(examples, tokenizer)
     input_ids = torch.tensor([f.input_ids for f in eval_features], dtype=torch.long)
     input_mask = torch.tensor([f.input_mask for f in eval_features], dtype=torch.long)
@@ -174,7 +178,12 @@ def infer_for_examples(sentences, target_starts, target_ends, lemmas, model_fold
     glosses = []
     
     for sent_str, target_start_id, target_end_id, lemma in zip(sentences, target_starts, target_ends, lemmas):
-        sense_key, gloss = infer(model, tokenizer, sent_str, target_start_id, target_end_id, lemma, args)
+        item = infer(model, tokenizer, sent_str, target_start_id, target_end_id, lemma, args)
+        if item is None: # no matched word
+            sense_key = None
+            gloss = None 
+        else:
+             sense_key, gloss = item
         sense_keys.append(sense_key)
         glosses.append(gloss)
     return sense_keys, glosses
@@ -197,10 +206,10 @@ if  __name__ == "__main__":
     # target_end_id = 4
     # lemma = "plan"
 
-    input = "I was caught in the xxddd"
-    target_start_id = 5
-    target_end_id = 6
-    lemma = "xxddd"
+    input = "I went to the park"
+    target_start_id = 4
+    target_end_id = 5
+    lemma = "park"
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
     label_list = ["0", "1"]
     num_labels = len(label_list)
