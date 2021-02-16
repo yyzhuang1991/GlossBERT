@@ -160,12 +160,13 @@ def infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args):
     return sense_key, gloss
 
 
-def infer_for_examples(sentences, target_starts, target_ends, lemmas, args):
-    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
+def infer_for_examples(sentences, target_starts, target_ends, lemmas, model_folder = "/uusoc/exports/scratch/yyzhuang/glossbert/checkpoint/"):
+    # sentences: list of str, each str should have already been tokenized and concat by space
+    tokenizer = BertTokenizer.from_pretrained(model_folder, do_lower_case=True)
     label_list = ["0", "1"]
     num_labels = len(label_list)
                                      
-    model = BertForSequenceClassification.from_pretrained(args.bert_model,  num_labels=num_labels)
+    model = BertForSequenceClassification.from_pretrained(model_folder,  num_labels=num_labels)
     model.to(device)
     model.eval()
 
@@ -191,11 +192,15 @@ if  __name__ == "__main__":
 
 
     # demo input
-    input = "U.N. group drafts plan to reduce emissions"
-    target_start_id = 3
-    target_end_id = 4
-    lemma = "plan"
+    # input = "U.N. group drafts plan to reduce emissions"
+    # target_start_id = 3
+    # target_end_id = 4
+    # lemma = "plan"
 
+    input = "I was caught in the thunderstrom"
+    target_start_id = 5
+    target_end_id = 6
+    lemma = "thunderstorm"
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
     label_list = ["0", "1"]
     num_labels = len(label_list)
