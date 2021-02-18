@@ -8,10 +8,13 @@ import torch.nn.functional as F
 import numpy as np
 import sys
 import logging
+from os.path import join, abspath, dirname
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt = '%m/%d/%Y %H:%M:%S',
                     level = logging.INFO)
+curpath = dirname(abspath(__file__))
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -36,7 +39,7 @@ def construct_context_gloss_pairs(input, target_start_id, target_end_id, lemma):
     lemma = lemma
 
 
-    sense_data = pd.read_csv("./wordnet/index.sense.gloss",sep="\t",header=None).values
+    sense_data = pd.read_csv(join(curpath,"wordnet/index.sense.gloss"),sep="\t",header=None).values
     d = dict()
     for i in range(len(sense_data)):
         s = sense_data[i][0]
