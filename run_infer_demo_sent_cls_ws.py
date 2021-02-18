@@ -1,4 +1,5 @@
 import pandas as pd
+from nltk import wordnet as wn
 import argparse
 from tokenization import BertTokenizer
 from modeling import BertForSequenceClassification
@@ -164,7 +165,7 @@ def infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args):
     return sense_key, gloss
 
 
-def infer_for_examples(sentences, target_starts, target_ends, lemmas, model_folder = "/uusoc/exports/scratch/yyzhuang/glossbert/checkpoint/"):
+def infer_for_examples(sentences, target_starts, target_ends, lemmas, args):
     # sentences: list of str, each str should have already been tokenized and concat by space
     tokenizer = BertTokenizer.from_pretrained(model_folder, do_lower_case=True)
     label_list = ["0", "1"]
@@ -188,6 +189,19 @@ def infer_for_examples(sentences, target_starts, target_ends, lemmas, model_fold
         glosses.append(gloss)
     return sense_keys, glosses
 
+
+
+def load_glossbert(args):
+    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
+    label_list = ["0", "1"]
+    num_labels = len(label_list)
+                                     
+    model = BertForSequenceClassification.from_pretrained(args.bert_model,  num_labels=num_labels)
+    
+    model.to(device)
+    model.eval()
+    return model, tokenizer
+
 if  __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -198,26 +212,11 @@ if  __name__ == "__main__":
 
     args = parser.parse_args()
 
-
-
-    # demo input
-    # input = "U.N. group drafts plan to reduce emissions"
-    # target_start_id = 3
-    # target_end_id = 4
-    # lemma = "plan"
-
     input = "I went to the bank and talked with the banker"
     target_start_id = 4
     target_end_id = 5
     lemma = "bank"
-    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
-    label_list = ["0", "1"]
-    num_labels = len(label_list)
-                                     
-    model = BertForSequenceClassification.from_pretrained(args.bert_model,  num_labels=num_labels)
-    
-    model.to(device)
-    model.eval()
+    model, tokenizer = load_glossbert(args)
 
     sense_key, gloss = infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args)
     print(f"output sense key: {sense_key}, gloss = {gloss}")
