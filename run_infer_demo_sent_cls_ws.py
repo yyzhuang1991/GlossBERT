@@ -205,6 +205,7 @@ def load_glossbert(args):
     model.eval()
     return model, tokenizer
 
+# python run_infer_demo_sent_cls_ws.py 
 if  __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -216,8 +217,8 @@ if  __name__ == "__main__":
     args = parser.parse_args()
 
     input = 'we rode bikes around the town a lot .'
-    target_start_id = 16
-    target_end_id = 1
+    target_start_id = 1
+    target_end_id = 2
     lemma = "ride"
     model, tokenizer = load_glossbert(args)
 
