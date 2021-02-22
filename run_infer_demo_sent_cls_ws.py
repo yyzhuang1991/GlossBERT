@@ -215,10 +215,10 @@ if  __name__ == "__main__":
 
     args = parser.parse_args()
 
-    input = "I went to the bank and talked with the banker"
-    target_start_id = 4
-    target_end_id = 5
-    lemma = "bank"
+    input = 'we rode bikes around the town a lot .'
+    target_start_id = 16
+    target_end_id = 1
+    lemma = "ride"
     model, tokenizer = load_glossbert(args)
 
     sense_key, gloss = infer(model, tokenizer, input, target_start_id, target_end_id, lemma, args)
